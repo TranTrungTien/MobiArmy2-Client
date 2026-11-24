@@ -303,28 +303,33 @@ public class PM {
             for (i = 0; i < p.length; ++i) {
                 if (p[i] != null) {
                     p[i].isPaintCountDown = false;
+                    if (p[i].getState() != 5) {
+                        p[i].resetHurt();
+                    }
                 }
             }
 
-            p[whoNext].isPaintCountDown = true;
-            p[whoNext].active = true;
-            if (p[whoNext].getState() != 8) {
-                p[whoNext].setState((byte) 0);
-                p[whoNext].checkAngleForSprite();
-            }
+            if (whoNext >= 0 && whoNext < p.length && p[whoNext] != null) {
+                p[whoNext].isPaintCountDown = true;
+                p[whoNext].active = true;
+                if (p[whoNext].getState() != 8) {
+                    p[whoNext].setState((byte) 0);
+                    p[whoNext].checkAngleForSprite();
+                }
 
-            p[whoNext].movePoint = 0;
-            p[whoNext].itemUsed = -1;
-            if (p[whoNext].isUsedItem) {
-                p[whoNext].isUsedItem = false;
-            }
+                p[whoNext].movePoint = 0;
+                p[whoNext].itemUsed = -1;
+                if (p[whoNext].isUsedItem) {
+                    p[whoNext].isUsedItem = false;
+                }
 
-            if (p[whoNext].gun != 15) {
-                p[whoNext].falling = true;
-            }
+                if (p[whoNext].gun != 15) {
+                    p[whoNext].falling = true;
+                }
 
-            if (p[whoNext].isStopWind) {
-                GameScr.changeWind(0, 0);
+                if (p[whoNext].isStopWind) {
+                    GameScr.changeWind(0, 0);
+                }
             }
 
             for (i = 0; i < p.length; ++i) {
@@ -348,6 +353,8 @@ public class PM {
             GameScr.time.resetTime();
             curP = whoNext;
             if (curP == GameScr.myIndex) {
+                p[curP].lastForcePoint = 0;
+                p[curP].lastForcePoint_2 = 0;
                 if (p[curP].cantSee) {
                     GameScr.cantSee = true;
                 } else {
@@ -380,15 +387,16 @@ public class PM {
     }
 
     public void updatePlayerXY(int whoUpdateXY, short x, short y) {
-        p[whoUpdateXY].x = x;
-        p[whoUpdateXY].y = y;
-        p[whoUpdateXY].nextx = x;
-        p[whoUpdateXY].lastx = x;
-        p[whoUpdateXY].nexty = y;
-        if (whoUpdateXY == GameScr.myIndex) {
-            p[whoUpdateXY].resetLastUpdateXY(x, y);
+        if (whoUpdateXY >= 0 && whoUpdateXY < p.length && p[whoUpdateXY] != null) {
+            p[whoUpdateXY].x = x;
+            p[whoUpdateXY].y = y;
+            p[whoUpdateXY].nextx = x;
+            p[whoUpdateXY].lastx = x;
+            p[whoUpdateXY].nexty = y;
+            if (whoUpdateXY == GameScr.myIndex) {
+                p[whoUpdateXY].resetLastUpdateXY(x, y);
+            }
         }
-
     }
 
     public void setPlayerAfterSetWin(boolean teamWin) {

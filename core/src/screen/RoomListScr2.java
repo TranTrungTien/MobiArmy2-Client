@@ -151,8 +151,10 @@ public class RoomListScr2 extends CScreen {
    }
 
    public void changeName(int id, String name) {
-      RoomInfo roomInfo = (RoomInfo)this.roomList.elementAt(id);
-      roomInfo.name = name;
+      if (id >= 0 && id < this.roomList.size()) {
+         RoomInfo roomInfo = (RoomInfo)this.roomList.elementAt(id);
+         roomInfo.name = name;
+      }
    }
 
    private void paintRoomList(mGraphics g) {

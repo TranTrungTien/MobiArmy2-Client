@@ -1,3 +1,4 @@
+
 package screen;
 
 import CLib.Image;
@@ -147,7 +148,7 @@ public class GameScr extends CScreen {
     int whoGetMoney2;
     boolean isMoneyFly;
     int nBoLuot;
-    private boolean isSelectItem;
+    public boolean isSelectItem;
     public static int curItemSelec;
     private long timeDelayClosePauseMenu;
     public static byte myIndex;
@@ -443,7 +444,7 @@ public class GameScr extends CScreen {
         res = "";
         this.nBoLuot = 3;
         iconOnOf = true;
-        if (curGRAPHIC_LEVEL != 2) {
+        if (curGRAPHIC_LEVEL != 2 || trainingMode) {
             mm.createBackGround();
         }
 
@@ -456,7 +457,9 @@ public class GameScr extends CScreen {
                 }
                 break;
             case 2:
-                Background.removeImage();
+                if (!trainingMode) {
+                    Background.removeImage();
+                }
         }
 
         this.initGamescr();
@@ -471,7 +474,7 @@ public class GameScr extends CScreen {
 
         time.initTimeInterval(timeInterval);
         this.snow = null;
-        if (curGRAPHIC_LEVEL != 2) {
+        if (curGRAPHIC_LEVEL != 2 || trainingMode) {
             if (Background.curBGType == 2) {
                 this.snow = new Snow();
                 this.snow.startSnow(0);
@@ -543,30 +546,12 @@ public class GameScr extends CScreen {
                     curItemSelec = aa;
                 } else if (CCanvas.isDoubleClick) {
                     int[] itemList = PM.getMyPlayer().item;
-                    if (trainingMode) {
-                        clearKey();
-                        PM.getMyPlayer().UseItem(itemList[curItemSelec], true, curItemSelec);
-                        if (itemList[curItemSelec] == 0) {
-                            CPlayer var10000 = PM.p[0];
-                            var10000.hp += 30;
-                        }
-
+                    if (PM.getMyPlayer().itemUsed != -1 || itemList[curItemSelec] == -2 || itemList[curItemSelec] == -1) {
                         this.isSelectItem = false;
-                        this.timeDelayClosePauseMenu = mSystem.currentTimeMillis() + 300L;
-                    } else {
-                        CRes.out("itemList: " + itemList.length);
+                        return;
+                    }
 
-                        for (int i = 0; i < itemList.length; ++i) {
-                            CRes.out("itemList: " + i + "_value_" + itemList[i]);
-                        }
-
-                        CRes.out("index/idItem/ItemUsed: " + curItemSelec + "/" + itemList[curItemSelec] + "/" + PM.getMyPlayer().itemUsed);
-                        if (PM.getMyPlayer().itemUsed != -1 || itemList[curItemSelec] == -2 || itemList[curItemSelec] == -1) {
-                            this.isSelectItem = false;
-                            return;
-                        }
-
-                        if (pm.isYourTurn()) {
+                    if (pm.isYourTurn()) {
                             if (PrepareScr.currLevel == 7) {
                                 if (GameScr.num[curItemSelec] != 0) {
                                     PM.getMyPlayer().UseItem(itemList[curItemSelec], false, curItemSelec);
@@ -581,7 +566,6 @@ public class GameScr extends CScreen {
                         }
 
                         clearKey();
-                    }
                 }
             }
         }
@@ -703,7 +687,7 @@ public class GameScr extends CScreen {
                 GameScr.this.timeShowPauseMenu = mSystem.currentTimeMillis() + 300L;
             }
         }));
-        if (pm.isYourTurn() && !trainingMode && !BM.active && PM.getMyPlayer().active && this.nBoLuot > 0) {
+        if (pm.isYourTurn() && !BM.active && PM.getMyPlayer().active && this.nBoLuot > 0) {
             menu.addElement(new Command(Language.SKIP(), new IAction() {
                 public void perform() {
                     GameScr.time.skipTurn();
@@ -717,11 +701,7 @@ public class GameScr extends CScreen {
         menu.addElement(new Command(Language.LEAVEBATTLE(), new IAction() {
             public void perform() {
                 if (GameScr.trainingMode) {
-                    GameService.gI().training((byte) 1);
-                    GameScr.trainingMode = false;
-                    GameScr.this.isShowPausemenu = false;
-                    GameScr.this.timeShowPauseMenu = mSystem.currentTimeMillis() + 300L;
-                    CScreen.isSetClip = true;
+                    GameScr.exitTrainingToMenu();
                 } else if (PM.p[GameScr.myIndex].getState() == 5) {
                     CCanvas.startYesNoDlg(Language.youWillLose(), new IAction() {
                         public void perform() {
@@ -796,9 +776,9 @@ public class GameScr extends CScreen {
     }
 
     public void update() {
-        if (trainingMode) {
-            this.doTraining();
-        }
+        // if (trainingMode) {
+        //     this.doTraining();
+        // }
 
         if (this.chatWait > 0) {
             --this.chatWait;
@@ -923,9 +903,7 @@ public class GameScr extends CScreen {
                     CCanvas.startOKDlg(Language.training7(), new IAction() {
                         public void perform() {
                             GameScr.trainingStep = 0;
-                            GameScr.trainingMode = false;
-                            GameService.gI().training((byte) 1);
-                            CCanvas.menuScr.show();
+                                            GameScr.exitTrainingToMenu();
                         }
                     });
                 }
@@ -1096,7 +1074,7 @@ public class GameScr extends CScreen {
 
     public void paint(mGraphics g) {
         Camera.translate(g);
-        if (curGRAPHIC_LEVEL != 2) {
+        if (curGRAPHIC_LEVEL != 2 || trainingMode) {
             mm.paintBackGround(g);
         } else {
             g.setColor(6483442);
@@ -1235,18 +1213,23 @@ public class GameScr extends CScreen {
             g.fillRect(Camera.x + w - 10, Camera.y, 10, h, false);
         }
 
-        if (!trainingMode) {
-            time.paint(g);
-        }
+        time.paint(g);
 
         int yPaint;
         if (pm.isYourTurn() && PM.getCurPlayer() != null) {
-            int forceT1 = PM.getMyPlayer().getState() == 3 ? PM.getMyPlayer().force : 0;
-            int forceT2 = PM.getMyPlayer().getState() == 3 ? PM.getMyPlayer().force_2 : 0;
+            boolean showingMaxedShot1 = CPlayer.isShooting
+                    && PM.getMyPlayer().lastForcePoint >= PM.getMyPlayer().maxforce;
+            boolean showingMaxedShot2 = CPlayer.isShooting
+                    && PM.getMyPlayer().lastForcePoint_2 >= PM.getMyPlayer().maxforce2;
+            int forceT1 = PM.getMyPlayer().getState() == 3 ? PM.getMyPlayer().force
+                    : showingMaxedShot1 ? PM.getMyPlayer().lastForcePoint : 0;
+            int forceT2 = PM.getMyPlayer().getState() == 3 ? PM.getMyPlayer().force_2
+                    : showingMaxedShot2 ? PM.getMyPlayer().lastForcePoint_2 : 0;
             yPaint = PM.getMyPlayer().movePoint;
             int lastForcePoint1 = PM.getMyPlayer().lastForcePoint;
             int lastForcePoint2 = PM.getMyPlayer().lastForcePoint_2;
-            if (!this.isSelectItem && MainGame.getNumberFingerOnScreen() < 2 && Camera.mode != 0 && !CPlayer.isShooting) {
+            if (!this.isSelectItem && MainGame.getNumberFingerOnScreen() < 2 && Camera.mode != 0
+                    && (!CPlayer.isShooting || showingMaxedShot1 || showingMaxedShot2)) {
                 onDrawPowerBar(g, Camera.x + (w >> 1), Camera.y + h - 25 + 5, forceT1, lastForcePoint1, yPaint);
                 if (PM.getMyPlayer().isDoublePower) {
                     onDrawSecondPowerBar(g, Camera.x + (w >> 1), Camera.y + h - 25 - 15 + 5, forceT2, lastForcePoint2, yPaint);
@@ -1435,11 +1418,15 @@ public class GameScr extends CScreen {
     }
 
     public static void onDrawPowerBar(mGraphics g, int x, int y, int power, int mark, int movePoint) {
-        if (s_frBar != null) {
+        if (s_frBar != null && PM.getMyPlayer() != null) {
             s_frBar.drawFrame(1, x - 54 - 10, y + 5, 3, 0, g, false);
             s_frBar.drawFrame(3, x + 2 + 10, y + 5, 3, 0, g, false);
             s_frBar.fillFrame(0, x - 54 - 10, y + 5, (60 - movePoint) * 100 / 60, 3, 0, g, true);
-            s_frBar.fillFrame(2, x + 2 + 10, y + 5, power * 100 / 30, 3, 0, g, true);
+            // Fix: add 1 so the bar visually reaches 100% right before auto-fire at maxforce
+            int maxForce = PM.getMyPlayer() != null ? PM.getMyPlayer().maxforce : 30;
+            int displayPower = maxForce <= 0 || power >= maxForce ? 100 : power * 100 / maxForce;
+            displayPower = Math.max(0, Math.min(100, displayPower));
+            s_frBar.fillFrame(2, x + 2 + 10, y + 5, displayPower, 3, 0, g, true);
             s_frBar.drawFrame(5, x - 53 - 10, y - 7, 3, 0, g, true);
             s_frBar.fillFrame(4, x - 54 - 10, y - 7, PM.getMyPlayer().angryX * 100 / 100, 3, 0, g, true);
             if (mark > 0) {
@@ -1453,7 +1440,10 @@ public class GameScr extends CScreen {
     public static void onDrawSecondPowerBar(mGraphics g, int x, int y, int power, int mark, int movePoint) {
         if (Camera.mode != 0) {
             s_frBar.drawFrame(3, x + 2 + 10, y + 8, 0, 0, g);
-            s_frBar.fillFrame(2, x + 2 + 10, y + 8, power * 100 / 30, 3, 0, g, true);
+            int maxForce = PM.getMyPlayer() != null ? PM.getMyPlayer().maxforce2 : 30;
+            int displayPower = maxForce <= 0 || power >= maxForce ? 100 : power * 100 / maxForce;
+            displayPower = Math.max(0, Math.min(100, displayPower));
+            s_frBar.fillFrame(2, x + 2 + 10, y + 8, displayPower, 3, 0, g, true);
             if (mark > 0) {
                 g.setColor(16482175);
                 g.drawLine(x + 2 + mark * 49 / 30 + 10, y + 10, x + 2 + mark * 49 / 30 + 10, y + 8 + 9, false);
@@ -1547,6 +1537,96 @@ public class GameScr extends CScreen {
 
     }
 
+    public static boolean isTouchActionButton(int xScreen, int yScreen) {
+        if (!CCanvas.isTouch) {
+            return false;
+        }
+        if (CCanvas.gameScr != null && CCanvas.gameScr.isSelectItem) {
+            return true;
+        }
+        if (CCanvas.pausemenu != null && CCanvas.pausemenu.isShow) {
+            return true;
+        }
+        // Menu / Arrow icon (top-left)
+        if (xScreen >= 0 && xScreen <= 60 && yScreen >= 0 && yScreen <= 60) {
+            return true;
+        }
+        // Chat icon (top-left)
+        if (xScreen > 60 && xScreen <= 120 && yScreen >= 0 && yScreen <= 60) {
+            return true;
+        }
+        // Camera icon (top-right)
+        if (xScreen >= CCanvas.width - 60 && xScreen <= CCanvas.width && yScreen >= 0 && yScreen <= 60) {
+            return true;
+        }
+        // Left move button
+        int xOffset = 30;
+        int yOffset = 30;
+        if (trai != null && trai.image != null) {
+            int x1 = xL - trai.image.width / 2 - xOffset / 2;
+            int y1 = yL - trai.image.height / 2 - yOffset / 2;
+            int w1 = trai.image.getWidth() + xOffset;
+            int h1 = trai.image.getHeight() + yOffset;
+            if (xScreen >= x1 && xScreen <= x1 + w1 && yScreen >= y1 && yScreen <= y1 + h1) {
+                return true;
+            }
+        }
+        // Right move button
+        if (phai != null && phai.image != null) {
+            int x2 = xR - phai.image.width / 2 - xOffset / 2;
+            int y2 = yR - trai.image.height / 2 - yOffset / 2;
+            int w2 = phai.image.getWidth() + xOffset;
+            int h2 = phai.image.getHeight() + yOffset;
+            if (xScreen >= x2 && xScreen <= x2 + w2 && yScreen >= y2 && yScreen <= y2 + h2) {
+                return true;
+            }
+        }
+        // Fire button
+        if (crossHair2 != null && crossHair2.image != null) {
+            int x3 = xF - xOffset / 2;
+            int y3 = yF - yOffset / 2;
+            int w3 = crossHair2.image.getWidth() + xOffset;
+            int h3 = crossHair2.image.getHeight() + yOffset;
+            if (xScreen >= x3 && xScreen <= x3 + w3 && yScreen >= y3 && yScreen <= y3 + h3) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean isTouchActionButton(int index) {
+        if (index >= 0 && index < CCanvas.pX.length) {
+            return isTouchActionButton(CCanvas.pX[index], CCanvas.pY[index]);
+        }
+        return false;
+    }
+
+    public static void exitTrainingToMenu() {
+        if (!trainingMode) {
+            return;
+        }
+
+        // Command 83(type 1) is a one-way request; this server does not send a 83 response.
+        GameService.gI().training((byte) 1);
+        trainingMode = false;
+        MenuScr.curMenuLevel = 1;
+        MenuScr.curMenuSelect = MenuScr.MENU_CHOINGAY;
+        if (CCanvas.pausemenu != null) {
+            CCanvas.pausemenu.isShow = false;
+        }
+        if (CCanvas.gameScr != null) {
+            CCanvas.gameScr.isShowPausemenu = false;
+            CCanvas.gameScr.onClearMap();
+            CCanvas.gameScr = null;
+        }
+        CCanvas.menuScr.show();
+        CCanvas.menuScr.activeCroll(MenuScr.curMenuLevel, MenuScr.curMenuSelect);
+        CCanvas.menuScr.select = 4;
+        CCanvas.menuScr.activeCMTOY(4, 6);
+        CScreen.isSetClip = true;
+        Session_ME.receiveSynchronized = 0;
+    }
+
     public void onClearMap() {
         mm.onClearMap();
         sm.onClearMap();
@@ -1632,6 +1712,13 @@ public class GameScr extends CScreen {
 
     public void onPointerReleased(int x, int y2, int index) {
         this.isPressXL = this.isPressXR = this.isPressXF = false;
+
+        // A tap on the result screen exits training directly; command 83 has no server reply.
+        if (!res.equals("") && GameScr.trainingMode) {
+            GameScr.exitTrainingToMenu();
+            return;
+        }
+
         if (Camera.mode == 1 && !this.isSelectItem) {
             pm.onPointerReleased(x, y2, index);
         }
@@ -1645,14 +1732,14 @@ public class GameScr extends CScreen {
                 this.selectedItemPanelRealeased(x, y2, index);
             }
         } else {
-            if (CCanvas.pausemenu.isShow) {
+            if (CCanvas.pausemenu != null && CCanvas.pausemenu.isShow) {
                 CCanvas.pausemenu.onPointerRealeased(x, y2, index);
-            } else if (CCanvas.isPointer(0, 0, 50, 50, index)) {
+            } else if (CCanvas.isPointer(0, 0, 60, 60, index)) {
                 this.doShowPauseMenu();
             }
 
-            this.isShowPausemenu = CCanvas.pausemenu.isShow;
-            if (CCanvas.pausemenu.isShow) {
+            this.isShowPausemenu = CCanvas.pausemenu != null && CCanvas.pausemenu.isShow;
+            if (this.isShowPausemenu) {
                 return;
             }
 
@@ -1661,9 +1748,9 @@ public class GameScr extends CScreen {
                 tfChat.doChangeToTextBox();
             }
 
-            if (PM.getCurPlayer() != null && CCanvas.isPointer(CCanvas.width - 50, 0, 50, 50, index)) {
+            if (PM.getCurPlayer() != null && CCanvas.isPointer(CCanvas.width - 60, 0, 60, 60, index)) {
                 if (Camera.mode != 0) {
-                    if (!(PM.getCurPlayer() instanceof Boss) && CCanvas.isPointer(CCanvas.width - 50, 0, 50, 50, index)) {
+                    if (!(PM.getCurPlayer() instanceof Boss) && CCanvas.isPointer(CCanvas.width - 60, 0, 60, 60, index)) {
                         Camera.mode = 0;
                         clearKey();
                     }

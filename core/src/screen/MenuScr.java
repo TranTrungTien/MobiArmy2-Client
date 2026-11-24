@@ -604,7 +604,6 @@ public class MenuScr extends CScreen {
    }
 
    public void doTraining(byte MapID, byte timeInterval, short[] playerX, short[] playerY, short[] maxHP, short[] equipID) {
-       System.out.println("choi game");
       CCanvas.prepareScr.playerInfos.removeAllElements();
       PlayerInfo me;
       int i;
@@ -654,7 +653,6 @@ public class MenuScr extends CScreen {
       PM.p[0].isCom = false;
       PM.p[0].item = PrepareScr.getStrainingItem();
       GameScr.trainingStep = 0;
-      PM.p[0].hp = 70;
       GameScr.myIndex = 0;
    }
 

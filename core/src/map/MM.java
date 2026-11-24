@@ -53,7 +53,7 @@ public class MM {
     public void createBackGround() {
         Background.waterY = mapHeight - (Background.water.image.getHeight() + Background.inWater.image.getHeight()) + 37;
         CRes.out(this.getClass().getName() + " createBackGround have mapID = " + mapID);
-        if (GameScr.curGRAPHIC_LEVEL != 2) {
+        if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             for (int i = 0; i < mapFiles.size(); ++i) {
                 MapFile mf = (MapFile) mapFiles.elementAt(i);
                 if (mapID == mf.mapID) {
@@ -256,14 +256,13 @@ public class MM {
                 this.count1 = h.size();
             }
 
-            if (MenuScr.isTraining) {
-                MenuScr.isTraining = false;
-                GameService.gI().training((byte) 0);
-            }
-
             CRes.out("=====================> MapImage " + mapImages.size());
             if (this.count1 == 0) {
                 CCanvas.endDlg();
+                if (MenuScr.isTraining) {
+                    MenuScr.isTraining = false;
+                    GameService.gI().training((byte) 0);
+                }
             }
 
         }
@@ -438,5 +437,6 @@ public class MM {
 
     public void onClearMap() {
         maps.removeAllElements();
+        vHoleInfo.removeAllElements();
     }
 }

@@ -377,8 +377,10 @@ public class CPlayer {
         }
 
         this.team = this.index % 2 == 0;
-        if (equip != null) {
+        if (equip != null && equip.equips != null && equip.equips[0] != null) {
             this.idBullet = equip.equips[0].bullet;
+        } else {
+            this.idBullet = this.gun;
         }
 
         if (this.gun == 3) {
@@ -609,7 +611,7 @@ public class CPlayer {
 
         this.dx = this.radius * CRes.cos(this.angle) >> 10;
         this.dy = this.radius * CRes.sin(this.angle) >> 10;
-        if (this.isCom && !this.flyPlayer && !this.isJump) {
+        if (this.isCom && !this.flyPlayer && !this.isJump && this.state != 8 && this.state != 5) {
             if (this.nextx == this.x && this.nexty == this.y) {
                 this.setState((byte) 1);
             }
@@ -788,11 +790,6 @@ public class CPlayer {
                 }
 
                 this.falling = false;
-                if (GameScr.trainingMode) {
-                    GameService.gI().training((byte) 1);
-                    GameScr.trainingMode = false;
-                    this.die();
-                }
             }
 
             this.nexty = this.y;
@@ -856,6 +853,9 @@ public class CPlayer {
 
             GameScr.time.stop();
         } else if (!this.isDoublePower) {
+            if (this.force == 0) {
+                this.lastForcePoint = 0;
+            }
             ++this.force;
             if (this.force >= this.maxforce) {
                 this.shoot();
@@ -872,6 +872,9 @@ public class CPlayer {
                 this.isSecondPower = true;
             }
         } else {
+            if (this.force_2 == 0) {
+                this.lastForcePoint_2 = 0;
+            }
             ++this.force_2;
             if (this.force_2 >= this.maxforce2) {
                 this.shoot();
@@ -1091,8 +1094,8 @@ public class CPlayer {
             GameService.gI().waitForFIRE(bulletType, (short) this.x, (short) this.y, (short) this.angle, this.force, this.force_2, numShoot);
         }
 
-        this.lastForcePoint = this.force;
-        this.lastForcePoint_2 = this.force_2;
+        this.lastForcePoint = Math.max(this.lastForcePoint, this.force);
+        this.lastForcePoint_2 = Math.max(this.lastForcePoint_2, this.force_2);
         this.force = 0;
         this.force_2 = 0;
     }
@@ -1843,6 +1846,14 @@ public class CPlayer {
 
     }
 
+    public void resetHurt() {
+        if (this.state != 5) {
+            this.setState((byte) 0);
+            this.checkAngleForSprite();
+            this.frameDelay = 0;
+        }
+    }
+
     public void setWin() {
         this.curFrame = 8;
         this.setState((byte) 7);
@@ -2103,6 +2114,9 @@ public class CPlayer {
                             CRes.out("mouse " + xScreen + "/" + yScreen);
                             CRes.out("range3 " + range3);
                             if (!this.isHoldFire) {
+                                if (GameScr.isTouchActionButton(xScreen, yScreen)) {
+                                    return;
+                                }
                                 if (xScreen <= this.x - Camera.x) {
                                     this.look = 0;
                                 } else {

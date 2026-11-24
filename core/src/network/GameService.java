@@ -500,19 +500,14 @@ public class GameService {
     }
 
     public void move(short x, short y) {
-        if (!GameScr.trainingMode) {
-            Message m = new Message((byte) 21);
-            CRes.out(" move to " + x + "," + y);
-
-            try {
-                m.writer().writeShort(x);
-                m.writer().writeShort(y);
-            } catch (Exception var5) {
-            }
-
-            this.session.sendMessage(m);
-            m.cleanup();
+        Message m = new Message((byte) 21);
+        try {
+            m.writer().writeShort(x);
+            m.writer().writeShort(y);
+        } catch (Exception var5) {
         }
+        this.session.sendMessage(m);
+        m.cleanup();
     }
 
     public void waitForFIRETraining(byte type, short x, short y, short angle, byte force, byte force_2, byte numShoot) {
@@ -567,20 +562,15 @@ public class GameService {
     }
 
     public void requiredUpdateXY(short x, short y) {
-        CRes.out("==> requiredUpdateXY " + x + "_" + y);
-        if (!GameScr.trainingMode) {
-            Message m = new Message((byte) 53);
-
-            try {
-                m.writer().writeShort(x);
-                m.writer().writeShort(y);
-            } catch (Exception var5) {
-                var5.printStackTrace();
-            }
-
-            this.session.sendMessage(m);
-            m.cleanup();
+        Message m = new Message((byte) 53);
+        try {
+            m.writer().writeShort(x);
+            m.writer().writeShort(y);
+        } catch (Exception var5) {
+            var5.printStackTrace();
         }
+        this.session.sendMessage(m);
+        m.cleanup();
     }
 
     public void inviteFriend(boolean isList, int id) {
@@ -597,26 +587,19 @@ public class GameService {
     }
 
     public void skipTurn() {
-        if (!GameScr.trainingMode) {
-            Message m = new Message((byte) 49);
-            this.session.sendMessage(m);
-            m.cleanup();
-        }
+        Message m = new Message((byte) 49);
+        this.session.sendMessage(m);
+        m.cleanup();
     }
 
     public void useItem(byte item) {
-        if (!GameScr.trainingMode) {
-            Message m = new Message((byte) 26);
-
-            try {
-                m.writer().writeByte(item);
-            } catch (Exception var4) {
-            }
-
-            this.session.sendMessage(m);
-            m.cleanup();
-            CRes.out("==========> SendM UseITEM " + item);
+        Message m = new Message((byte) 26);
+        try {
+            m.writer().writeByte(item);
+        } catch (Exception var4) {
         }
+        this.session.sendMessage(m);
+        m.cleanup();
     }
 
     public void changeItem(int[] typeItem) {

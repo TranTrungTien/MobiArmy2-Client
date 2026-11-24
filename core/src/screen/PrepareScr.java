@@ -191,12 +191,14 @@ public class PrepareScr extends CScreen {
 
     public static int[] getStrainingItem() {
         int[] item = new int[numCurItemSlot];
-        item[0] = 0;
-        item[1] = 0;
-        item[2] = 0;
-        item[3] = 0;
-        item[4] = 0;
-        item[5] = 0;
+        item[0] = 0;  // Hồi máu
+        item[1] = 2;  // Đạn đôi (X2)
+        item[2] = 1;  // Bay (Teleport)
+        item[3] = 5;  // Ngưng gió
+        item[4] = 9;  // Tơ nhện
+        item[5] = 4;  // Tàng hình
+        item[6] = 28; // Đạn ngưng đọng (Freeze)
+        item[7] = 23; // Hố đen (Đạn phá đất)
         return item;
     }
 
@@ -582,7 +584,9 @@ public class PrepareScr extends CScreen {
             }
         }
 
-        if (readyCount != 0 && unReadyCount <= 0) {
+        boolean isBoss = (currLevel == 5 || currLevel == 7 || isBossRoom || (CCanvas.roomListScr != null && CCanvas.roomListScr.isBoss));
+        boolean canStart = isBoss ? (unReadyCount <= 0) : (readyCount != 0 && unReadyCount <= 0);
+        if (canStart) {
             if (this.money > TerrainMidlet.myInfo.xu) {
                 CCanvas.startOKDlg(Language.notEnoughMoney());
             }

@@ -346,7 +346,9 @@ public class Equip {
     }
 
     public void drawImage(mGraphics g, int Look, int Frame, int X, int Y) {
-        if (!this.notPaint) {
+        if (!this.notPaint && this.glass >= 0 && this.glass < PlayerEquip.imgData.length
+                && PlayerEquip.imgData[this.glass] != null && this.x != null && this.y != null
+                && this.w != null && this.h != null && this.dx != null && this.dy != null) {
             int W = 0;
             int H = 0;
             if (this.glass == 0 || this.glass == 1 || this.glass == 2 || this.glass == 4 || this.glass == 5 || this.glass == 8 || this.glass == 9) {
@@ -369,16 +371,23 @@ public class Equip {
                 H = 32;
             }
 
-            if (Frame < 6) {
-                if (Look == 0) {
-                    g.drawRegion(PlayerEquip.imgData[this.glass], this.x[Frame], this.y[Frame], this.w[Frame], this.h[Frame], Look, X - W / 2 + this.dx[Frame] + 18, Y - H + this.dy[Frame] + 40, 0, false);
-                    Font.smallFont.drawString(g, " ", X - W / 2 + this.dx[Frame] + 18, Y - H + this.dy[Frame] + 40, 0, false);
-                }
+            // Equipment sheets can have fewer than six frames. Animation states 6+ reuse
+            // the final valid frame, and negative/transient frames use the first frame.
+            int frameCount = Math.min(this.x.length, Math.min(this.y.length,
+                    Math.min(this.w.length, Math.min(this.h.length,
+                            Math.min(this.dx.length, this.dy.length)))));
+            if (frameCount == 0) {
+                return;
+            }
+            int drawFrame = Math.max(0, Math.min(Frame, frameCount - 1));
+            if (Look == 0) {
+                g.drawRegion(PlayerEquip.imgData[this.glass], this.x[drawFrame], this.y[drawFrame], this.w[drawFrame], this.h[drawFrame], Look, X - W / 2 + this.dx[drawFrame] + 18, Y - H + this.dy[drawFrame] + 40, 0, false);
+                Font.smallFont.drawString(g, " ", X - W / 2 + this.dx[drawFrame] + 18, Y - H + this.dy[drawFrame] + 40, 0, false);
+            }
 
-                if (Look == 2) {
-                    g.drawRegion(PlayerEquip.imgData[this.glass], this.x[Frame], this.y[Frame], this.w[Frame], this.h[Frame], Look, X + W / 2 - (this.dx[Frame] + 18), Y - H + this.dy[Frame] + 40, mGraphics.TOP | mGraphics.RIGHT, false);
-                    Font.smallFont.drawString(g, "  ", X + W / 2 - (this.dx[Frame] + 18), Y - H + this.dy[Frame] + 40, 0, false);
-                }
+            if (Look == 2) {
+                g.drawRegion(PlayerEquip.imgData[this.glass], this.x[drawFrame], this.y[drawFrame], this.w[drawFrame], this.h[drawFrame], Look, X + W / 2 - (this.dx[drawFrame] + 18), Y - H + this.dy[drawFrame] + 40, mGraphics.TOP | mGraphics.RIGHT, false);
+                Font.smallFont.drawString(g, "  ", X + W / 2 - (this.dx[drawFrame] + 18), Y - H + this.dy[drawFrame] + 40, 0, false);
             }
 
         }

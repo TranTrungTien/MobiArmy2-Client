@@ -3,6 +3,7 @@ package screen;
 import CLib.Image;
 import CLib.mGraphics;
 import CLib.mImage;
+import CLib.mSystem;
 import Equipment.Equip;
 import Equipment.PlayerEquip;
 import coreLG.CCanvas;
@@ -69,6 +70,8 @@ public class EquipScreen extends TabScreen {
    int cc;
    int ee;
    public Equip[] currEq;
+   private int lastTappedItem = -1;
+   private long lastItemTapTime;
    PlayerEquip equip;
    int pa;
    boolean trans;
@@ -111,7 +114,6 @@ public class EquipScreen extends TabScreen {
                   } else {
                      EquipScreen.this.doInventory();
                   }
-
                }
             });
             String title = !EquipScreen.this.isCompine ? Language.kethop() : Language.trangbi();
@@ -193,22 +195,20 @@ public class EquipScreen extends TabScreen {
       this.select = 0;
       PlayerInfo m = TerrainMidlet.myInfo;
       PlayerInfo.vipID = m.equipVipID[m.gun][1];
-      this.getLastEquip();
-      this.getDetail();
       TerrainMidlet.myInfo.getMyEquip(9);
+      for (int i = 0; i < 5; ++i) {
+         if (m.myEquip.equips[i] != null && m.dbKey != null && i < m.dbKey.length) {
+            m.myEquip.equips[i].dbKey = m.dbKey[i];
+         }
+      }
       TerrainMidlet.myInfo.setAllEquipEffect();
 
-      for(int i = 0; i < 5; ++i) {
-         this.dbKeyChange[i] = -1;
-         this.lastDb[i] = -1;
-      }
+      // Keep the real equipped keys as the cancel state and five-slot save payload.
+      this.getLastEquip();
+      this.getDetail();
 
       this.getMyEquip();
-      if (inventory.size() == 0) {
-         inventory = inventory;
-      }
-
-      this.vLastE = this.myEquips;
+      this.vLastE = (Vector) this.myEquips.clone();
       this.setCurrEquip();
       this.getBaseAttribute();
       this.seeNextAttribute();
@@ -316,9 +316,10 @@ public class EquipScreen extends TabScreen {
 
       for(int i = 0; i < this.myEquips.size(); ++i) {
          Equip tam = (Equip)this.myEquips.elementAt(i);
-         if (info.myEquip.equips[tam.type] != null && info.myEquip.equips[tam.type].dbKey == tam.dbKey) {
+         if (info.myEquip.equips[tam.type] != null && (info.myEquip.equips[tam.type].dbKey == tam.dbKey || (info.myEquip.equips[tam.type].id == tam.id && info.myEquip.equips[tam.type].dbKey <= 0))) {
             info.myEquip.equips[tam.type].removeAbility();
             info.myEquip.equips[tam.type].addAbilityFromEquip(tam);
+            info.myEquip.equips[tam.type].dbKey = tam.dbKey;
          }
       }
 
@@ -431,7 +432,31 @@ public class EquipScreen extends TabScreen {
             return;
          }
 
-         if (this.getEquipSelect().date == 0) {
+         PlayerInfo m = TerrainMidlet.myInfo;
+         Equip e = this.getEquipSelect();
+         // An expired item can still be removed from its slot; renewal is only
+         // relevant when trying to equip an item that is not currently worn.
+         if (e.vip != 1) {
+            for (int i = 0; i < 5; ++i) {
+               Equip equipped = m.myEquip.equips[i];
+               if (equipped != null && e.dbKey == equipped.dbKey) {
+                  Equip defaultEquip = PlayerEquip.getEquip(m.gun, (byte)i, (short)0);
+                  m.myEquip.equips[i] = defaultEquip == null ? null : PlayerEquip.createEquip(m.gun, (byte)i, (short)0);
+                  if (m.myEquip.equips[i] != null) {
+                     m.myEquip.equips[i].dbKey = -1;
+                  }
+                  m.equipID[m.gun][i] = -1;
+                  m.dbKey[i] = -1;
+                  this.dbKeyChange[i] = -1;
+                  this.setCurrEquip();
+                  this.getBaseAttribute();
+                  this.seeNextAttribute();
+                  return;
+               }
+            }
+         }
+
+         if (e.vip != 1 && e.date == 0) {
             CCanvas.startYesNoDlg(Language.noticGiahanTrangBi(), new IAction() {
                public void perform() {
                   CCanvas.startOKDlg(Language.pleaseWait());
@@ -445,8 +470,6 @@ public class EquipScreen extends TabScreen {
             return;
          }
 
-         PlayerInfo m = TerrainMidlet.myInfo;
-         Equip e = this.getEquipSelect();
          if (e.vip == 1) {
             if (e.id != PlayerInfo.vipID) {
                GameService.gI().vip_equip((byte)1, e.dbKey);
@@ -469,21 +492,16 @@ public class EquipScreen extends TabScreen {
             return;
          }
 
-         int i;
-         for(i = 0; i < 5; ++i) {
-            if (m.myEquip.equips[i] != null && e.dbKey == m.myEquip.equips[i].dbKey) {
-               return;
-            }
+         if (e.type < 0 || e.type >= this.dbKeyChange.length) {
+            return;
          }
-
-         for(i = 0; i < this.typeE.length; ++i) {
-            if (e.type == this.typeE[i]) {
-               this.dbKeyChange[i] = e.dbKey;
-            }
-         }
+         this.dbKeyChange[e.type] = e.dbKey;
 
          short id = m.equipID[m.gun][e.type];
          Equip currE = PlayerEquip.createEquip(m.gun, e.type, id);
+         if (currE == null && m.myEquip.equips[e.type] != null) {
+            currE = m.myEquip.equips[e.type];
+         }
          m.addChangeEquip(e, currE);
          this.changeEquip();
          this.setCurrEquip();
@@ -513,19 +531,25 @@ public class EquipScreen extends TabScreen {
    }
 
    public void resetEquip() {
-      try {
-         PlayerInfo m = TerrainMidlet.myInfo;
-
-         for(int i = 0; i < this.lastEquip.length; ++i) {
-            if (this.lastEquip[i] != null) {
-               m.myEquip.equips[i].changeToEquip(this.lastEquip[i]);
+      PlayerInfo m = TerrainMidlet.myInfo;
+      for(int i = 0; i < this.lastEquip.length; ++i) {
+         if (this.lastEquip[i] != null) {
+            if (m.myEquip.equips[i] == null) {
+               m.myEquip.equips[i] = new Equip();
             }
+            m.myEquip.equips[i].changeToEquip(this.lastEquip[i]);
+            m.equipID[m.gun][i] = this.lastEquip[i].id;
+            m.dbKey[i] = this.lastEquip[i].dbKey;
+         } else {
+            m.myEquip.equips[i] = null;
+            m.equipID[m.gun][i] = -1;
+            m.dbKey[i] = -1;
          }
-
-         this.myEquips = this.vLastE;
-      } catch (Exception var3) {
+         this.dbKeyChange[i] = this.lastDb[i];
       }
-
+      this.myEquips = (Vector) this.vLastE.clone();
+      this.setCurrEquip();
+      this.getBaseAttribute();
    }
 
    public void getLastEquip() {
@@ -535,10 +559,14 @@ public class EquipScreen extends TabScreen {
          if (m.myEquip.equips[i] != null) {
             this.lastDb[i] = (short)m.myEquip.equips[i].dbKey;
             m.equipID[m.gun][i] = m.myEquip.equips[i].id;
+            m.dbKey[i] = m.myEquip.equips[i].dbKey;
             this.lastEquip[i] = new Equip();
             this.lastEquip[i].changeToEquip(m.myEquip.equips[i]);
          } else {
             this.lastDb[i] = -1;
+            this.dbKeyChange[i] = -1;
+            this.lastEquip[i] = null;
+            m.dbKey[i] = -1;
          }
 
          this.dbKeyChange[i] = this.lastDb[i];
@@ -549,25 +577,18 @@ public class EquipScreen extends TabScreen {
    public void changeEquip() {
       PlayerInfo m = TerrainMidlet.myInfo;
       Equip sl = this.getEquipSelect();
-      if (sl != null) {
-         if (m.myEquip.equips[sl.type] == null) {
-            m.myEquip.equips[sl.type] = PlayerEquip.getEquip(sl.glass, sl.type, sl.id);
-         }
-
-         m.myEquip.equips[sl.type].changeToEquip(sl);
+      if (sl == null || sl.type < 0 || sl.type >= 5) {
+         return;
       }
 
-      m.myEquip.equips[sl.type].icon = sl.icon;
-      m.myEquip.equips[sl.type].x = sl.x;
-      m.myEquip.equips[sl.type].y = sl.y;
-      m.myEquip.equips[sl.type].dx = sl.dx;
-      m.myEquip.equips[sl.type].dy = sl.dy;
-      m.myEquip.equips[sl.type].w = sl.w;
-      m.myEquip.equips[sl.type].h = sl.h;
-      m.myEquip.equips[sl.type].bullet = sl.bullet;
-      m.myEquip.equips[sl.type].frame = sl.frame;
-      m.myEquip.equips[sl.type].addAbilityFromEquip(sl);
-      m.myEquip.equips[sl.type].dbKey = sl.dbKey;
+      m.equipID[m.gun][sl.type] = sl.id;
+      m.dbKey[sl.type] = sl.dbKey;
+      if (m.myEquip.equips[sl.type] == null) {
+         m.myEquip.equips[sl.type] = new Equip();
+      }
+      m.myEquip.equips[sl.type].changeToEquip(sl);
+      m.myEquip.equips[sl.type].isVip = false;
+      m.myEquip.equips[sl.type].vip = sl.vip;
    }
 
    public void doInventory() {
@@ -710,17 +731,17 @@ public class EquipScreen extends TabScreen {
       for(j = 0; j < 5; ++j) {
          eq = info.myEquip.equips[j];
          if (eq != null) {
-            for(j = 0; j < 5; ++j) {
-               ability[j] += eq.inv_ability[j];
-               percen[j] += eq.inv_percen[j];
+            for(int k = 0; k < 5; ++k) {
+               ability[k] += eq.inv_ability[k];
+               percen[k] += eq.inv_percen[k];
             }
          }
       }
 
       if (vip != null) {
-         for(j = 0; j < 5; ++j) {
-            ability[j] += vip.inv_ability[j];
-            percen[j] += vip.inv_percen[j];
+         for(int k = 0; k < 5; ++k) {
+            ability[k] += vip.inv_ability[k];
+            percen[k] += vip.inv_percen[k];
          }
       }
 
@@ -967,12 +988,22 @@ public class EquipScreen extends TabScreen {
    public void onPointerReleased(int xReleased, int yReleased, int index) {
       super.onPointerReleased(xReleased, yReleased, index);
       this.trans = false;
-      int xDraw = this.W / 2 - 86;
-      int yDraw = this.yPaint + 96;
-      if (CCanvas.isPointer(xDraw, yDraw + this.wP, 72, 87, index)) {
-         int aa = (this.cmtoYITem + yReleased - yDraw - this.wP) / this.wTab * this.wIndex + (xReleased - xDraw - this.wP) / this.wTab;
-         if (aa == this.select && this.center != null && CCanvas.isDoubleClick) {
+      int xDraw = this.W / 2 - 78;
+      int yDraw = this.yPaint + 102;
+      int aa = this.itemIndexAt(xReleased, yReleased, xDraw, yDraw);
+      if (aa >= 0) {
+         long now = mSystem.currentTimeMillis();
+         boolean sameItemDoubleClick = aa == this.lastTappedItem && now - this.lastItemTapTime <= 400L;
+         this.lastTappedItem = aa;
+         this.lastItemTapTime = now;
+         if (aa == this.select && this.center != null && sameItemDoubleClick) {
+            this.select = aa;
             this.center.action.perform();
+            this.getDetail();
+            this.setCurrEquip();
+            this.getBaseAttribute();
+            this.seeNextAttribute();
+            return;
          }
 
          this.select = aa;
@@ -984,6 +1015,8 @@ public class EquipScreen extends TabScreen {
          if (this.select > this.myEquips.size() - 1) {
             this.select = this.myEquips.size() - 1;
          }
+      } else {
+         this.lastTappedItem = -1;
       }
 
       this.seeNextAttribute();
@@ -993,17 +1026,10 @@ public class EquipScreen extends TabScreen {
       super.onPointerPressed(xPress, yPress, index);
       int xDraw = this.W / 2 - 78;
       int yDraw = this.yPaint + 102;
-      if (CCanvas.isPointer(xDraw, yDraw, 72, 87, index)) {
-         int aa = (this.cmtoYITem + yPress - yDraw) / this.wTab * this.wIndex + (xPress - xDraw - this.wP) / this.wTab;
+      int aa = this.itemIndexAt(xPress, yPress, xDraw, yDraw);
+      if (aa >= 0) {
          this.select = aa;
          this.getDetail();
-         if (this.select < 0) {
-            this.select = 0;
-         }
-
-         if (this.select > this.myEquips.size() - 1) {
-            this.select = this.myEquips.size() - 1;
-         }
       }
       
       if (CCanvas.keyPressed[2] || CCanvas.keyPressed[4] || CCanvas.keyPressed[6] || CCanvas.keyPressed[8]) {
@@ -1035,5 +1061,28 @@ public class EquipScreen extends TabScreen {
             CScreen.clearKey();
        }
 
+   }
+
+   private int itemIndexAt(int x, int y, int drawX, int drawY) {
+      int clipX = drawX - 1;
+      int clipY = drawY - 1;
+      if (x < clipX || x >= clipX + 62 || y < clipY || y >= clipY + 60) {
+         return -1;
+      }
+
+      int localX = x - drawX - this.wP;
+      int localY = cmyI + y - drawY - this.wP;
+      if (localX < 0 || localY < 0) {
+         return -1;
+      }
+
+      int column = localX / this.wTab;
+      int row = localY / this.wTab;
+      if (column >= this.wIndex || localX % this.wTab >= 16 || localY % this.wTab >= 16) {
+         return -1;
+      }
+
+      int itemIndex = row * this.wIndex + column;
+      return itemIndex >= 0 && itemIndex < this.myEquips.size() ? itemIndex : -1;
    }
 }

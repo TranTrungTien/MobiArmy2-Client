@@ -40,7 +40,7 @@ public class CTime {
    }
 
    public void update() {
-      if (this.visible && !GameScr.trainingMode) {
+      if (this.visible) {
          this.cur = System.currentTimeMillis();
          if (this.cur - this.last >= 1000L) {
             --seconds;

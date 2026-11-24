@@ -336,7 +336,6 @@ public class MainGame implements ApplicationListener {
         }
 
         public boolean keyDown(int keycode) {
-            System.out.print("keyDown="+keycode);
             if (CCanvas.currentDialog != null) {
                 if (keycode == 131 && CCanvas.currentDialog.left != null) {
                     CCanvas.currentDialog.left.action.perform();
@@ -399,7 +398,6 @@ public class MainGame implements ApplicationListener {
         }
 
         public boolean keyUp(int keycode) {
-            System.out.println("keyUp="+keycode);
             int k = MapKey.map(keycode);
             GameMidlet.gameCanvas.keyReleased(k);
             MainGame.keyHold = -1;
@@ -412,7 +410,6 @@ public class MainGame implements ApplicationListener {
         }
 
         public boolean keyTyped(char character) {
-            System.out.print("keyTyped="+(int)character);
             GameMidlet.gameCanvas.keyHold(character);
             return false;
         }

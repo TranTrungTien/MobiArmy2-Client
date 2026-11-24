@@ -1,0 +1,55 @@
+## 0. Chuẩn bị một lần (đã xong)
+
+- DB H2 đã nạp vào `D:\army\MobiArmy2-Server\data\army.mv.db`.
+- Trong `src/mobiarmy/server/Server.java`, dòng `dbManager` phải trỏ đúng DB đó:
+
+"jdbc:h2:file:./data/army;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE;NON_KEYWORDS=USER;AUTO_SERVER=TRUE"
+
+
+## 1. Chạy server
+
+Ở thư mục `D:\army\MobiArmy2-Server`:
+
+javac -cp "lib/*" -sourcepath src -d out src/mobiarmy/MobiArmy.java
+java -cp "out;lib/*" mobiarmy.MobiArmy
+
+Lệnh đầu biên dịch (chỉ cần chạy lại khi bạn sửa code). Lệnh sau chạy chương trình. Khi cửa sổ hiện lên, bấm **Start Server**, terminal sẽ in `Start server port:8122`. Giữ cửa sổ terminal này mở để xem log.
+
+## 2. Chạy client
+
+Ở thư mục `D:\army\MobiArmy2-Client`:
+
+.\gradlew.bat :desktop:run
+
+Lần đầu Gradle phải tải thư viện nên cần mạng và chạy lâu. Mình chưa chạy thử client nên đây là lệnh theo cấu trúc dự án.
+
+Hai điều cần kiểm tra nếu client không lên hoặc không kết nối được:
+- Client phải trỏ về `127.0.0.1` cổng `8122`. Tìm bằng `Get-ChildItem -Recurse core,desktop -Include *.java | Select-String "8122"`.
+- Nếu Gradle báo lỗi Android SDK, mở `settings.gradle` và chỉ giữ `core` và `desktop` (bỏ `android`, `ios`, `unity`).
+
+## 3. Thứ tự chạy
+
+Mở server trước, bấm Start Server, rồi mới chạy client. Tắt thì làm ngược lại: đóng client trước, rồi bấm **Stop Server** (để server lưu dữ liệu người chơi) và đóng cửa sổ.
+
+## 4. Chỉ chạy khi cần tạo lại DB
+
+Dùng khi bạn muốn đưa DB về trạng thái ban đầu từ `army.sql`. Ở thư mục `MobiArmy2-Server`, sau khi tắt server:
+
+
+java -cp "lib/h2-2.2.224.jar" MysqlToH2.java army.sql army_h2.sql --reset --load "jdbc:h2:./data/army;MODE=MySQL;DATABASE_TO_LOWER=TRUE;CASE_INSENSITIVE_IDENTIFIERS=TRUE"
+
+
+Lệnh này xóa sạch mọi dữ liệu hiện có trong `data/army`, kể cả người chơi mới tạo. Nếu muốn giữ, hãy copy `data/army.mv.db` ra chỗ khác trước. Dòng cuối phải là `Loaded into H2: 78 ok, 0 failed`.
+
+
+
+
+
+----------------------------------------------------
+Server
+dir /s /b src\*.java > sources.txt
+mkdir %TEMP%\check 2>nul
+javac -Xlint:all -encoding UTF-8 -cp "lib/*" -d %TEMP%\check @sources.txt
+
+Client
+gradlew.bat :core:compileJava :desktop:compileJava

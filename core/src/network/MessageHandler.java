@@ -752,7 +752,13 @@ public class MessageHandler implements IMessageHandler {
                         break;
                     }
                     case 83: {
+                        // If we pre-set curMenuLevel (e.g., training exit → go to training sub-menu), preserve it
+                        int savedLevel = MenuScr.curMenuLevel;
+                        int savedSelect = MenuScr.curMenuSelect;
                         CCanvas.menuScr.show();
+                        if (savedLevel > 0) {
+                            CCanvas.menuScr.activeCroll(savedLevel, savedSelect);
+                        }
                         if (CCanvas.gameScr != null) {
                             CCanvas.gameScr.onClearMap();
                             CCanvas.gameScr = null;
@@ -1483,9 +1489,9 @@ public class MessageHandler implements IMessageHandler {
                         i = 0;
                         while (i < 5) {
                             int myDbKey = msg.reader().readInt();
+                            TerrainMidlet.myInfo.dbKey[i] = myDbKey;
                             if (TerrainMidlet.myInfo.myEquip.equips[i] != null) {
                                 TerrainMidlet.myInfo.myEquip.equips[i].dbKey = myDbKey;
-                                TerrainMidlet.myInfo.dbKey[i] = myDbKey;
                             }
                             ++i;
                         }
@@ -1858,7 +1864,6 @@ public class MessageHandler implements IMessageHandler {
                         break;
                     }
                     case 123: {
-                        System.out.println("CHAT TO TEAM");
                         MsgInfo msg2 = new MsgInfo();
                         msg2.fromName = String.valueOf(msg.reader().readUTF()) + " " + Language.chatAll();
                         msg2.message = msg.reader().readUTF();

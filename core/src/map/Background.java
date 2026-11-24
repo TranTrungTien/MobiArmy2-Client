@@ -264,43 +264,43 @@ public class Background {
       sunY = skyLine - 75;
       switch(BGType) {
       case 0:
-         nBgX = CScreen.w / 128;
+         nBgX = CScreen.w / 128 + 2;
          break;
       case 1:
-         nBgX = CScreen.w / 72;
+         nBgX = CScreen.w / 72 + 2;
          break;
       case 2:
-         nBgX = CScreen.w / 64;
+         nBgX = CScreen.w / 64 + 2;
          break;
       case 3:
-         nBgX = CScreen.w / 72;
+         nBgX = CScreen.w / 72 + 2;
          break;
       case 4:
-         nBgX = CScreen.w / 241;
-         nBgX2 = CScreen.w / 226;
+         nBgX = CScreen.w / 241 + 2;
+         nBgX2 = CScreen.w / 226 + 2;
          break;
       case 5:
-         nBgX = CScreen.w / 241;
+         nBgX = CScreen.w / 241 + 2;
          break;
       case 6:
       case 10:
-         nBgX = CScreen.w / 238;
-         nBgX2 = CScreen.w / 225;
+         nBgX = CScreen.w / 238 + 2;
+         nBgX2 = CScreen.w / 225 + 2;
          break;
       case 7:
-         nBgX = GameScr.w / 219;
-         nBgX2 = GameScr.w / 218;
+         nBgX = GameScr.w / 219 + 2;
+         nBgX2 = GameScr.w / 218 + 2;
          break;
       case 8:
-         nBgX = GameScr.w / 219;
-         nBgX2 = GameScr.w / 210;
+         nBgX = GameScr.w / 219 + 2;
+         nBgX2 = GameScr.w / 210 + 2;
       case 9:
       case 11:
       default:
          break;
       case 12:
-         nBgX = CScreen.w / 108;
-         nBgX2 = CScreen.w / 108;
+         nBgX = CScreen.w / 108 + 2;
+         nBgX2 = CScreen.w / 108 + 2;
          this.snow = new Snow();
          this.snow.min = 300;
          this.snow.max = 400;
@@ -312,23 +312,23 @@ public class Background {
          this.snow.waterY = -50;
          break;
       case 13:
-         nBgX = GameScr.w / 219;
-         nBgX2 = GameScr.w / 218;
+         nBgX = GameScr.w / 219 + 2;
+         nBgX2 = GameScr.w / 218 + 2;
          break;
       case 14:
-         nBgX = GameScr.w / 128;
-         nBgX2 = GameScr.w / 128;
+         nBgX = GameScr.w / 128 + 2;
+         nBgX2 = GameScr.w / 128 + 2;
          break;
       case 15:
-         nBgX = GameScr.w / 241;
-         nBgX = GameScr.w / 241;
+         nBgX = GameScr.w / 241 + 2;
+         nBgX2 = GameScr.w / 241 + 2;
       }
 
       this.loadImage(BGType);
    }
 
    public void update() {
-      if (GameScr.curGRAPHIC_LEVEL != 2 && curBGType != 3) {
+      if ((GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) && curBGType != 3) {
          this.updateCloud();
       }
 
@@ -380,7 +380,7 @@ public class Background {
       case 0:
          g.setColor(8831994);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 2) % 128;
             dXKeo2 = CScreen.h - (Camera.y + CScreen.h >> 2) + this.yBackGr;
             g.setColor(2002158);
@@ -401,7 +401,7 @@ public class Background {
       case 1:
          g.setColor(8180459);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 2) % 64;
             dXKeo2 = CScreen.h - (Camera.y + CScreen.h >> 2) + this.yBackGr;
 
@@ -417,7 +417,7 @@ public class Background {
       case 2:
          g.setColor(8180459);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 2) % 64;
             dXKeo2 = CScreen.h - (Camera.y + CScreen.h >> 2) + 150 + this.yBackGr;
 
@@ -435,7 +435,7 @@ public class Background {
       case 3:
          g.setColor(8711932);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 2) % 72;
             dXKeo2 = CScreen.h - (Camera.y + CScreen.h >> 2) + this.yBackGr;
 
@@ -447,7 +447,7 @@ public class Background {
       case 4:
          g.setColor(14282750);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 3) % 241;
             dXKeo2 = (Camera.x >> 2) % 226;
             dYKeo = CScreen.h - (Camera.y + CScreen.h >> 2) + this.yBackGr;
@@ -469,7 +469,7 @@ public class Background {
       case 5:
          g.setColor(16775152);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 3) % 241;
             dXKeo2 = (Camera.x >> 2) % 241;
             dYKeo = CScreen.h - Camera.y / 2 + this.yBackGr;
@@ -489,7 +489,7 @@ public class Background {
       case 6:
          g.setColor(16706268);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 3) % 238;
             dXKeo2 = (Camera.x >> 2) % 225;
             dYKeo = CScreen.h - Camera.y / 2 + this.yBackGr;
@@ -511,7 +511,7 @@ public class Background {
       case 7:
          g.setColor(15267327);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 3) % 269;
             dXKeo2 = (Camera.x >> 2) % 368;
             dYKeo = CScreen.h - Camera.y / 3 + this.yBackGr - 100;
@@ -536,7 +536,7 @@ public class Background {
       case 9:
          g.setColor(16752448);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 3) % 238;
             dXKeo2 = (Camera.x >> 2) % 225;
             dYKeo = CScreen.h - Camera.y / 2 + this.yBackGr;
@@ -558,7 +558,7 @@ public class Background {
       case 10:
          g.setColor(7106965);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 3) % 238;
             dXKeo2 = (Camera.x >> 2) % 225;
             dYKeo = CScreen.h - Camera.y / 2 + this.yBackGr;
@@ -583,7 +583,7 @@ public class Background {
 
          g.setColor(530454);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 4) % 108;
             dXKeo2 = (Camera.x >> 3) % 108;
             dYKeo = CScreen.h - (Camera.y + CScreen.h >> 2) + this.yBackGr;
@@ -624,7 +624,7 @@ public class Background {
       case 13:
          g.setColor(8229794);
          g.fillRect(0, 0, CScreen.w + 10, CScreen.h + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 2) % 144;
             dXKeo2 = (Camera.x >> 2) % 176;
             dYKeo = (Camera.x >> 3) % 69;
@@ -656,7 +656,7 @@ public class Background {
       case 14:
          g.setColor(6606845);
          g.fillRect(0, 0, CCanvas.width + 10, CCanvas.hieght + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             dXKeo = (Camera.x >> 2) % 128;
             dXKeo2 = (Camera.x >> 3) % 128;
             dYKeo = CCanvas.hieght;
@@ -675,7 +675,7 @@ public class Background {
       case 15:
          g.setColor(16694934);
          g.fillRect(0, 0, CCanvas.width + 10, CCanvas.hieght + 10, false);
-         if (GameScr.curGRAPHIC_LEVEL != 2) {
+         if (GameScr.curGRAPHIC_LEVEL != 2 || GameScr.trainingMode) {
             this.drawSun2(g);
             dXKeo = (Camera.x >> 2) % 241;
             dXKeo2 = (Camera.x >> 3) % 241;

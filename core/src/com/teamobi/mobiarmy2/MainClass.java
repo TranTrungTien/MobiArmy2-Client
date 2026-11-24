@@ -80,7 +80,7 @@ public class MainClass extends ApplicationAdapter {
             for (int var6 = 0; var6 < var7; ++var6) {
                 byte bt = var8[var6];
                 char k = (char) bt;
-                System.out.print(k + "-");
+                // System.out.print(k + "-");
             }
         } catch (FileNotFoundException var10) {
             var10.printStackTrace();
@@ -123,7 +123,7 @@ public class MainClass extends ApplicationAdapter {
             for (int var6 = 0; var6 < var7; ++var6) {
                 byte bt = var8[var6];
                 char k = (char) bt;
-                System.out.print(k + "-");
+                // System.out.print(k + "-");
             }
         } catch (IOException var13) {
         } finally {

@@ -151,6 +151,7 @@ public class ChangePlayerCSr extends CScreen {
             short[] kinh = new short[]{(short) i, 3, !isVip ? p.equipID[i][3] : p.equipVipID[i][3]};
             short[] canh = new short[]{(short) i, 4, !isVip ? p.equipID[i][4] : p.equipVipID[i][4]};
             this.equip[i] = new PlayerEquip(new short[][]{sung, non, giap, kinh, canh});
+            this.equip[i].setGlass((byte)i);
         }
 
     }

@@ -85,6 +85,14 @@ public class PlayerInfo {
         short[] kinh = new short[]{this.gun, 3, this.equipID[this.gun][3]};
         short[] canh = new short[]{this.gun, 4, this.equipID[this.gun][4]};
         this.myEquip = new PlayerEquip(new short[][]{sung, non, giap, kinh, canh});
+        this.myEquip.setGlass(this.gun);
+        if (this.dbKey != null) {
+            for (int i = 0; i < 5; i++) {
+                if (this.myEquip.equips[i] != null && i < this.dbKey.length) {
+                    this.myEquip.equips[i].dbKey = this.dbKey[i];
+                }
+            }
+        }
     }
 
     public void getVipEquip() {
@@ -94,6 +102,7 @@ public class PlayerInfo {
         short[] kinh = new short[]{this.gun, 3, this.equipVipID[this.gun][3]};
         short[] canh = new short[]{this.gun, 4, this.equipVipID[this.gun][4]};
         this.myVipEquip = new PlayerEquip(new short[][]{sung, non, giap, kinh, canh});
+        this.myVipEquip.setGlass(this.gun);
     }
 
     public String getStrMoney() {

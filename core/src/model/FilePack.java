@@ -204,7 +204,7 @@ public class FilePack {
 
    public void LoadAllNameInFile() {
       for(int i = 0; i < this.nFile; ++i) {
-         System.out.println("Name File " + this.fname[i]);
+         // System.out.println("Name File " + this.fname[i]);
       }
 
    }

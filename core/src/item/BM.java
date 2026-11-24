@@ -161,7 +161,7 @@ public class BM {
    }
 
    private void createShootInfo() {
-      System.out.println("===================>BM CReateBullet nShoot: " + this.type);
+      // System.out.println("===================>BM CReateBullet nShoot: " + this.type);
       this.isEndDelayBull = true;
       nBum = 0;
 
@@ -173,6 +173,10 @@ public class BM {
       }
 
       this.createBullet(this.type);
+      if (this.bullets.size() == 0) {
+         this.endShoot();
+         return;
+      }
       boolean isFocusCAM = true;
       int camIndex = 0;
       switch(this.type) {
@@ -190,14 +194,9 @@ public class BM {
          this.nBull = this.critical == 0 ? 2 : 6;
          break;
       case 2:
-         camIndex = 1;
-         if (this.critical == 0) {
-            this.nBull = 3;
-         }
-
-         if (this.critical == 1) {
-            this.nBull = 7;
-         }
+         camIndex = this.bullets.size() > 1 ? 1 : 0;
+         this.nBull = this.bullets.size();
+         break;
       case 3:
       case 12:
       case 15:
@@ -363,13 +362,18 @@ public class BM {
          ++this.bIndex;
          break;
       case 2:
-         int m = this.critical == 0 ? 3 : 7;
+         int requested = this.critical == 0 ? 3 : 7;
+         int available = Math.min(this.xPaint != null ? this.xPaint.length : 0,
+                 this.yPaint != null ? this.yPaint.length : 0) - this.bIndex;
+         int shotsRemaining = Math.max(1, this.numShoot);
+         int maxForThisShot = Math.max(0, (available + shotsRemaining - 1) / shotsRemaining);
+         int m = Math.max(0, Math.min(requested, Math.min(available, maxForThisShot)));
 
          for(i = 0; i < m; ++i) {
             this.bullets.addElement(new Bullet(Type, this.xPaint[i + this.bIndex], this.yPaint[i + this.bIndex], this.whoShot, this.idBullet));
          }
 
-         this.bIndex += 3;
+         this.bIndex += m;
          break;
       case 3:
          this.bullets.addElement(new Bullet(Type, this.xPaint[1], this.yPaint[1], this.whoShot));
@@ -829,6 +833,11 @@ public class BM {
       CCanvas.lockNotify = true;
       CCanvas.tNotify = 0;
       CPlayer.closeMirror = true;
+      for (int i = 0; i < PM.p.length; ++i) {
+         if (PM.p[i] != null && PM.p[i].getState() != 5) {
+            PM.p[i].resetHurt();
+         }
+      }
    }
 
    public void activeAirplane(int X, int Y) {

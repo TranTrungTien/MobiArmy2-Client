@@ -135,7 +135,7 @@ public class mSystem {
          Pixmap p = new Pixmap(Gdx.files.internal(LibSysTem.res + url));
          return p;
       } catch (Exception var2) {
-         System.out.println("KHONG LOAD DC PIXMAP:" + url);
+         System.err.println("KHONG LOAD DC PIXMAP:" + url);
          return null;
       }
    }

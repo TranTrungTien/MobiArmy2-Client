@@ -1051,7 +1051,6 @@ public class CCanvas extends MotherCanvas implements IActionListener {
             }
 
             if (curScr != null) {
-                System.out.printf("%d - %d - %d - %d\n", x, y, index, button);
                 curScr.onPointerReleased(x, y, index);
             }
 

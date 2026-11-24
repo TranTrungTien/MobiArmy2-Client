@@ -1471,9 +1471,6 @@ public class Language {
     }
 
     public static String signIn() {
-        StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
-        StackTraceElement caller = stackTrace[2];
-        System.out.println("Called by: " + caller);
         return signIn[language];
     }
 
